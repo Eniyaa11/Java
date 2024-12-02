@@ -1,0 +1,170 @@
+import java.awt.*;
+import java.awt.event.*;
+import javax.swing.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+
+public class BloodDonationSystem extends JFrame {
+    // Defining the fields for registration and donor history
+    private JTextField nameField, ageField, bloodGroupField;
+    private JButton registerButton, viewButton;
+    private JList<String> donorList;
+    private JTextArea donorHistoryArea;
+    private DefaultListModel<String> donorListModel;
+
+    private static final ArrayList<Donor> donors = new ArrayList<>();
+    private static final HashMap<String, Integer> bloodInventory = new HashMap<>();
+
+    public BloodDonationSystem() {
+        setTitle("Blood Donation Management System");
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setLayout(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+
+        // Initializing components
+        nameField = new JTextField(15);
+        ageField = new JTextField(15);
+        bloodGroupField = new JTextField(15);
+
+        registerButton = new JButton("Register Donor");
+        viewButton = new JButton("View Donor History");
+
+        donorListModel = new DefaultListModel<>();
+        donorList = new JList<>(donorListModel);
+        donorHistoryArea = new JTextArea(10, 30);
+        donorHistoryArea.setEditable(false);
+
+        // Adding components to the frame with alignment
+        gbc.insets = new Insets(5, 5, 5, 5); // Padding
+        gbc.anchor = GridBagConstraints.WEST;
+
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        add(new JLabel("Name:"), gbc);
+
+        gbc.gridx = 1;
+        add(nameField, gbc);
+
+        gbc.gridx = 0;
+        gbc.gridy = 1;
+        add(new JLabel("Age:"), gbc);
+
+        gbc.gridx = 1;
+        add(ageField, gbc);
+
+        gbc.gridx = 0;
+        gbc.gridy = 2;
+        add(new JLabel("Blood Group:"), gbc);
+
+        gbc.gridx = 1;
+        add(bloodGroupField, gbc);
+
+        gbc.gridx = 0;
+        gbc.gridy = 3;
+        add(registerButton, gbc);
+
+        gbc.gridx = 1;
+        add(viewButton, gbc);
+
+        gbc.gridx = 0;
+        gbc.gridy = 4;
+        gbc.gridwidth = 2;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        add(new JLabel("Registered Donors:"), gbc);
+
+        gbc.gridy = 5;
+        add(new JScrollPane(donorList), gbc);
+
+        gbc.gridy = 6;
+        add(new JLabel("Donor History:"), gbc);
+
+        gbc.gridy = 7;
+        add(new JScrollPane(donorHistoryArea), gbc);
+
+        // Adding action listeners
+        registerButton.addActionListener(e -> registerDonor());
+        viewButton.addActionListener(e -> viewDonorHistory());
+
+        // Initializing the blood inventory
+        bloodInventory.put("A+", 10);
+        bloodInventory.put("O+", 8);
+        bloodInventory.put("B+", 6);
+        bloodInventory.put("AB+", 4);
+
+        pack();
+        setLocationRelativeTo(null);
+        setVisible(true);
+    }
+
+    private void registerDonor() {
+        String name = nameField.getText();
+        String ageText = ageField.getText();
+        String bloodGroup = bloodGroupField.getText();
+
+        if (name.isEmpty() || ageText.isEmpty() || bloodGroup.isEmpty()) {
+            showMessage("Please fill in all fields.");
+            return;
+        }
+
+        try {
+            int age = Integer.parseInt(ageText);
+
+            Donor donor = new Donor(name, age, bloodGroup);
+            donors.add(donor);
+            donorListModel.addElement(name + " (" + bloodGroup + ")");
+
+            nameField.setText("");
+            ageField.setText("");
+            bloodGroupField.setText("");
+
+            showMessage("Donor registered successfully!");
+        } catch (NumberFormatException e) {
+            showMessage("Invalid age. Please enter a valid number.");
+        }
+    }
+
+    private void viewDonorHistory() {
+        donorHistoryArea.setText("");
+        for (Donor donor : donors) {
+            donorHistoryArea.append(donor.toString() + "\n");
+        }
+
+        donorHistoryArea.append("\nBlood Inventory:\n");
+        for (String bloodGroup : bloodInventory.keySet()) {
+            donorHistoryArea.append(bloodGroup + ": " + bloodInventory.get(bloodGroup) + " units\n");
+        }
+    }
+
+    private void showMessage(String message) {
+        JOptionPane.showMessageDialog(this, message);
+    }
+
+    public static void main(String[] args) {
+        new BloodDonationSystem();
+    }
+}
+
+class Donor {
+    private final String name;
+    private final int age;
+    private final String bloodGroup;
+
+    public Donor(String name, int age, String bloodGroup) {
+        this.name = name;
+        this.age = age;
+        this.bloodGroup = bloodGroup;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getBloodGroup() {
+        return bloodGroup;
+    }
+
+    @Override
+    public String toString() {
+        return name + " (" + bloodGroup + ") - Age: " + age;
+    }
+}
